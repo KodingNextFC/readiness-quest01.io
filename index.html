@@ -1,0 +1,938 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ML Adventure: Readiness Quest - Journey Map</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        background: #ffffff;
+        font-family: "Nunito", sans-serif;
+        color: #000;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
+        user-select: none;
+      }
+
+      .container {
+        max-width: 800px;
+        width: 100%;
+        background: #ffffff;
+        border: 2px solid #1e90ff;
+        border-radius: 20px;
+        padding: 20px;
+        box-shadow: 0 20px 80px rgba(0, 0, 0, 0.1);
+        min-height: 650px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      header {
+        text-align: center;
+        margin-bottom: 12px;
+        margin-top: 10px;
+      }
+      h1 {
+        font-size: 2.2em;
+        color: #1e90ff;
+        margin-bottom: 5px;
+        font-family: "Fredoka One", cursive;
+      }
+      .subtitle {
+        font-size: 0.9em;
+        color: #666;
+        margin-bottom: 8px;
+      }
+
+      /* ── JOURNEY MAP ── */
+      .journey-map {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        position: relative;
+        margin: 20px 0;
+      }
+
+      .path-line {
+        position: absolute;
+        top: 50%;
+        left: 10%;
+        right: 10%;
+        height: 4px;
+        background: #1e90ff;
+        z-index: 1;
+        display: none;
+      }
+
+      .gates-container {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        position: relative;
+        z-index: 2;
+        padding: 0 20px;
+      }
+
+      .gate {
+        width: 120px;
+        height: 120px;
+        border-radius: 15px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        border: 3px solid #1e90ff;
+        background: #e6f2ff;
+        font-weight: 800;
+        color: #000;
+      }
+
+      .gate:hover:not(.locked) {
+        transform: scale(1.1);
+        background: #cce5ff;
+      }
+
+      .gate.locked {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .gate.active {
+        background: #1e90ff;
+        border-color: #1e90ff;
+        animation: pulse-gate 1.5s infinite;
+        color: #fff;
+      }
+
+      .gate.active .gate-name {
+        color: #fff;
+      }
+
+      @keyframes pulse-gate {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.85;
+        }
+      }
+
+      .gate.completed {
+        background: #b3d9ff;
+        border-color: #1e90ff;
+        opacity: 1;
+        color: #000;
+      }
+
+      .gate-emoji {
+        font-size: 2.5em;
+        margin-bottom: 8px;
+      }
+      .gate-name {
+        font-size: 0.95em;
+        text-align: center;
+        color: #1e90ff;
+        font-weight: 700;
+        line-height: 1.3;
+      }
+
+      .challenge-modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.9);
+        z-index: 1000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        animation: fadeIn 0.3s ease;
+      }
+
+      .challenge-modal.active {
+        display: flex;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      .modal-content {
+        background: #ffffff;
+        border: 2px solid #1e90ff;
+        border-radius: 20px;
+        padding: 22px;
+        max-width: 500px;
+        width: 100%;
+        box-shadow: 0 20px 80px rgba(0, 0, 0, 0.1);
+        animation: slideUp 0.4s ease;
+        max-height: 80vh;
+        overflow-y: auto;
+      }
+
+      @keyframes slideUp {
+        from {
+          transform: translateY(40px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      .modal-emoji {
+        font-size: 4em;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      .modal-title {
+        font-size: 1.6em;
+        color: #1e90ff;
+        margin-bottom: 10px;
+        font-weight: 800;
+      }
+      .modal-desc {
+        font-size: 0.95em;
+        color: #333;
+        margin-bottom: 18px;
+        line-height: 1.5;
+      }
+
+      .options-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 15px;
+      }
+
+      .option-btn {
+        background: #f0f0f0;
+        border: 2px solid #1e90ff;
+        color: #000;
+        padding: 12px;
+        border-radius: 12px;
+        font-size: 0.9em;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+        line-height: 1.3;
+      }
+
+      .option-btn:hover:not(:disabled) {
+        background: #e6f2ff;
+        border-color: #1e90ff;
+        transform: translateY(-3px);
+      }
+
+      .option-btn.correct {
+        background: #1e90ff;
+        border-color: #1e90ff;
+        animation: popIn 0.4s ease;
+      }
+
+      .option-btn.incorrect {
+        background: linear-gradient(135deg, #d32f2f, #c62828);
+        border-color: #d32f2f;
+      }
+
+      @keyframes popIn {
+        0% {
+          transform: scale(0.9);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      .modal-feedback {
+        font-size: 1.15em;
+        font-weight: 700;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        display: none;
+      }
+
+      .modal-feedback.show {
+        display: block;
+        animation: slideIn 0.3s ease;
+      }
+
+      .modal-feedback.correct {
+        background: #e8f5e9;
+        border-left: 4px solid #4caf50;
+        color: #2e7d32;
+      }
+
+      .modal-feedback.incorrect {
+        background: #ffebee;
+        border-left: 4px solid #f44336;
+        color: #c62828;
+      }
+
+      @keyframes slideIn {
+        from {
+          transform: translateX(-20px);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      .modal-buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-top: 15px;
+      }
+
+      .btn {
+        padding: 8px 20px;
+        border-radius: 50px;
+        border: none;
+        cursor: pointer;
+        font-family: "Fredoka One", cursive;
+        font-size: 0.9em;
+        font-weight: 700;
+        transition: all 0.3s ease;
+      }
+
+      .btn-continue {
+        background: #ff9800;
+        color: #fff;
+      }
+
+      .btn-continue:hover {
+        transform: translateY(-3px);
+        background: #f57c00;
+      }
+
+      .btn-continue:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .btn-close {
+        background: #f0f0f0;
+        border: 2px solid #1e90ff;
+        color: #1e90ff;
+      }
+
+      .btn-close:hover {
+        background: #e6f2ff;
+      }
+
+      /* ── COMPLETION SCREEN ── */
+      .completion-screen {
+        display: none;
+      }
+      .completion-screen.active {
+        display: flex;
+      }
+
+      .completion-screen {
+        flex-grow: 1;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        text-align: center;
+        animation: fadeIn 0.6s ease;
+      }
+
+      .completion-emoji {
+        font-size: 6em;
+        margin: 20px 0;
+      }
+      .completion-title {
+        font-size: 2.5em;
+        color: #1e90ff;
+        margin: 20px 0;
+        font-weight: 800;
+      }
+      .completion-score {
+        font-size: 3em;
+        font-weight: 900;
+        color: #1e90ff;
+        margin: 30px 0;
+      }
+      .completion-msg {
+        font-size: 1.15em;
+        color: #333;
+        margin: 20px 0;
+        line-height: 1.8;
+        max-width: 600px;
+      }
+
+      .completion-buttons {
+        display: flex;
+        gap: 20px;
+        margin-top: 40px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .btn-restart {
+        background: #f0f0f0;
+        border: 2px solid #1e90ff;
+        color: #1e90ff;
+      }
+      .btn-restart:hover {
+        background: #e6f2ff;
+      }
+
+      .btn-enter {
+        background: #ff9800;
+        color: #fff;
+        font-size: 1.15em;
+        padding: 16px 45px;
+      }
+
+      .btn-enter:hover {
+        transform: translateY(-3px);
+        background: #f57c00;
+      }
+
+      .koddy-message {
+        background: #e6f2ff;
+        border: 2px solid #1e90ff;
+        border-radius: 12px;
+        padding: 20px;
+        margin: 20px auto;
+        max-width: 600px;
+        text-align: center;
+        font-size: 1.05em;
+        color: #333;
+        line-height: 1.6;
+        font-weight: 600;
+      }
+
+      .koddy-message strong {
+        color: #1e90ff;
+      }
+      .stats {
+        position: relative;
+        background: #ffffff;
+        padding: 10px 15px;
+        border-radius: 10px;
+        border: 2px solid #1e90ff;
+        font-size: 0.9em;
+        z-index: 100;
+        margin: 0 auto 12px;
+        width: fit-content;
+        display: flex;
+        gap: 25px;
+      }
+
+      .stats-item {
+        margin: 0;
+        color: #333;
+        font-size: 0.9em;
+      }
+      .stats-label {
+        color: #1e90ff;
+        font-weight: 700;
+      }
+
+      @media (max-width: 1024px) {
+        .gates-container {
+          padding: 0 20px;
+        }
+        .gate {
+          width: 100px;
+          height: 100px;
+          font-size: 0.9em;
+        }
+        .gate-emoji {
+          font-size: 2em;
+        }
+
+        .options-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 20px;
+        }
+        h1 {
+          font-size: 1.8em;
+        }
+
+        .journey-map {
+          margin: 20px 0;
+        }
+        .gates-container {
+          flex-wrap: wrap;
+          gap: 20px;
+        }
+        .path-line {
+          display: none;
+        }
+
+        .gate {
+          width: 90px;
+          height: 90px;
+        }
+        .gate-emoji {
+          font-size: 1.8em;
+        }
+
+        .modal-content {
+          padding: 25px;
+        }
+        .modal-title {
+          font-size: 1.5em;
+        }
+
+        .stats {
+          font-size: 0.85em;
+          top: 10px;
+          right: 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- Header -->
+      <header>
+        <h1>🗺️ ML Adventure: Readiness Quest</h1>
+        <p class="subtitle">Explore the gates and test your ML knowledge!</p>
+      </header>
+
+      <!-- Stats -->
+      <div class="stats">
+        <div class="stats-item">
+          <span class="stats-label">Completed:</span>
+          <span id="completed">0</span>/5
+        </div>
+        <div class="stats-item">
+          <span class="stats-label">Score:</span> <span id="score">0</span>/5
+        </div>
+      </div>
+
+      <!-- Journey Map -->
+      <div class="journey-map" id="mapView">
+        <div class="path-line"></div>
+        <div class="gates-container" id="gatesContainer"></div>
+      </div>
+
+      <!-- Completion Screen -->
+      <div class="completion-screen" id="completionScreen">
+        <div class="completion-emoji" id="completionEmoji"></div>
+        <div class="completion-title" id="completionTitle"></div>
+        <div class="completion-score" id="completionScore"></div>
+        <div class="completion-msg" id="completionMsg"></div>
+        <div class="completion-buttons">
+          <button class="btn btn-restart" onclick="restartQuest()">
+            🔄 Restart Quest
+          </button>
+          <button class="btn btn-enter" onclick="enterLesson()">
+            ⚡ Enter the Lesson
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Challenge Modal -->
+    <div class="challenge-modal" id="modal">
+      <div class="modal-content">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 20px;
+          "
+        >
+          <div class="modal-emoji" id="modalEmoji"></div>
+          <button
+            class="btn btn-close"
+            onclick="closeModal()"
+            style="padding: 8px 16px; font-size: 0.9em"
+          >
+            ✕ Close
+          </button>
+        </div>
+        <div class="modal-title" id="modalTitle"></div>
+        <div class="modal-desc" id="modalDesc"></div>
+        <div class="options-grid" id="optionsGrid"></div>
+        <div class="modal-feedback" id="feedback"></div>
+        <div class="modal-buttons">
+          <button
+            class="btn btn-continue"
+            id="continueBtn"
+            onclick="nextGate()"
+            disabled
+          >
+            Continue →
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const gates = [
+        {
+          id: 0,
+          emoji: "🤖",
+          name: "What is ML?",
+          title: "Gate 1: Understanding Machine Learning",
+          desc: "What best describes Machine Learning?",
+          options: [
+            { text: "📝 Writing code with explicit rules", correct: false },
+            { text: "🧠 Systems learning patterns from data", correct: true },
+            { text: "💾 Storing information in databases", correct: false },
+          ],
+          feedback: {
+            correct: "🎉 Correct! ML is about learning from data!",
+            incorrect: "💡 ML learns patterns, not just rules!",
+          },
+        },
+        {
+          id: 1,
+          emoji: "📊",
+          name: "Data Matters",
+          title: "Gate 2: Why Data is Critical",
+          desc: "Why is training data essential in Machine Learning?",
+          options: [
+            {
+              text: "📚 Computers need examples to learn patterns",
+              correct: true,
+            },
+            { text: "🎯 Data stores the final answers", correct: false },
+            { text: "⚡ Data makes programs run faster", correct: false },
+          ],
+          feedback: {
+            correct: "⚡ Exactly! Quality data = Better learning!",
+            incorrect: "💭 Data teaches the computer patterns!",
+          },
+        },
+        {
+          id: 2,
+          emoji: "🧩",
+          name: "Features",
+          title: "Gate 3: Features & Patterns",
+          desc: 'In ML, what are "features"?',
+          options: [
+            { text: "🎨 Visual design elements", correct: false },
+            { text: "📈 Measurable characteristics/inputs", correct: true },
+            { text: "⚙️ Computer processing power", correct: false },
+          ],
+          feedback: {
+            correct: "🎯 Perfect! Features are the data inputs!",
+            incorrect: "💡 Features are the input characteristics!",
+          },
+        },
+        {
+          id: 3,
+          emoji: "🔮",
+          name: "Predictions",
+          title: "Gate 4: Making Predictions",
+          desc: "What does ML predict after training?",
+          options: [
+            { text: "💰 Future market prices always", correct: false },
+            { text: "🎲 Random outcomes", correct: false },
+            { text: "🔍 Patterns based on learned data", correct: true },
+          ],
+          feedback: {
+            correct: "🚀 Yes! ML finds patterns to predict!",
+            incorrect: "📚 ML predicts based on learned patterns!",
+          },
+        },
+        {
+          id: 4,
+          emoji: "🌍",
+          name: "Real World",
+          title: "Gate 5: ML in the World",
+          desc: "Which is a real-world ML application?",
+          options: [
+            { text: "🎬 Netflix recommendations", correct: true },
+            { text: "🎨 Drawing with paint brush", correct: false },
+            { text: "📞 Traditional telephone calls", correct: false },
+          ],
+          feedback: {
+            correct: "⭐ Correct! ML powers modern apps!",
+            incorrect: "💡 ML powers recommendations & predictions!",
+          },
+        },
+      ];
+
+      let completedGates = [];
+      let currentGateId = null;
+      let score = 0;
+
+      function initMap() {
+        const container = document.getElementById("gatesContainer");
+        container.innerHTML = "";
+
+        gates.forEach((gate, idx) => {
+          const gateDiv = document.createElement("div");
+          gateDiv.className = "gate";
+          gateDiv.id = `gate-${gate.id}`;
+
+          if (completedGates.includes(gate.id)) {
+            gateDiv.classList.add("completed");
+          } else if (gate.id === 0 || completedGates.includes(gate.id - 1)) {
+            gateDiv.classList.add("active");
+          } else {
+            gateDiv.classList.add("locked");
+          }
+
+          gateDiv.innerHTML = `
+      <div class="gate-emoji">${gate.emoji}</div>
+      <div class="gate-name">${gate.name}</div>
+    `;
+
+          gateDiv.addEventListener("click", () => {
+            if (
+              !gateDiv.classList.contains("locked") &&
+              !completedGates.includes(gate.id)
+            ) {
+              openChallenge(gate.id);
+            }
+          });
+
+          container.appendChild(gateDiv);
+        });
+
+        updateStats();
+      }
+
+      function openChallenge(gateId) {
+        const gate = gates[gateId];
+        currentGateId = gateId;
+
+        document.getElementById("modalEmoji").textContent = gate.emoji;
+        document.getElementById("modalTitle").textContent = gate.title;
+        document.getElementById("modalDesc").textContent = gate.desc;
+
+        const optionsGrid = document.getElementById("optionsGrid");
+        optionsGrid.innerHTML = "";
+        gate.options.forEach((opt, idx) => {
+          const btn = document.createElement("button");
+          btn.className = "option-btn";
+          btn.textContent = opt.text;
+          btn.onclick = () => selectOption(idx, opt.correct);
+          optionsGrid.appendChild(btn);
+        });
+
+        document.getElementById("feedback").classList.remove("show");
+        document.getElementById("continueBtn").disabled = true;
+        document.getElementById("modal").classList.add("active");
+
+        playSound();
+      }
+
+      function selectOption(idx, isCorrect) {
+        const btns = document.querySelectorAll(".option-btn");
+        btns.forEach((b) => (b.disabled = true));
+
+        const gate = gates[currentGateId];
+        const feedback = document.getElementById("feedback");
+        const continueBtn = document.getElementById("continueBtn");
+
+        if (isCorrect) {
+          score++;
+          btns[idx].classList.add("correct");
+          feedback.textContent = gate.feedback.correct;
+          feedback.className = "modal-feedback show correct";
+          playCorrectSound();
+        } else {
+          btns[idx].classList.add("incorrect");
+          feedback.textContent = gate.feedback.incorrect;
+          feedback.className = "modal-feedback show incorrect";
+          playWrongSound();
+        }
+
+        continueBtn.disabled = false;
+      }
+
+      function nextGate() {
+        completedGates.push(currentGateId);
+        closeModal();
+        initMap();
+
+        if (completedGates.length === gates.length) {
+          setTimeout(showCompletion, 500);
+        }
+      }
+
+      function closeModal() {
+        document.getElementById("modal").classList.remove("active");
+      }
+
+      function showCompletion() {
+        document.getElementById("mapView").style.display = "none";
+        const screen = document.getElementById("completionScreen");
+        screen.classList.add("active");
+
+        const percent = (score / gates.length) * 100;
+        let emoji, title, msg;
+
+        if (percent === 100) {
+          emoji = "🏆";
+          title = "LEGENDARY READINESS!";
+          msg =
+            "You've mastered ML fundamentals! SUPER READY for the journey. Prepare for greatness! ⚡";
+        } else if (percent >= 80) {
+          emoji = "⭐";
+          title = "EXCELLENT READINESS!";
+          msg = "Outstanding! You understand ML well. Ready to dive deep!";
+        } else if (percent >= 60) {
+          emoji = "🚀";
+          title = "GOOD READINESS!";
+          msg = "You're on the right track! The lesson will fill the gaps.";
+        } else if (percent >= 40) {
+          emoji = "📚";
+          title = "LEARNING MODE!";
+          msg = "No worries! The lesson is perfect for you. Let's learn!";
+        } else {
+          emoji = "💪";
+          title = "LET'S GET READY!";
+          msg = "Great! You're about to learn something amazing!";
+        }
+
+        document.getElementById("completionEmoji").textContent = emoji;
+        document.getElementById("completionTitle").textContent = title;
+        document.getElementById("completionScore").textContent =
+          `${score}/${gates.length}`;
+        document.getElementById("completionMsg").textContent = msg;
+
+        playFanfare();
+      }
+
+      function updateStats() {
+        document.getElementById("completed").textContent =
+          completedGates.length;
+        document.getElementById("score").textContent = score;
+      }
+
+      function restartQuest() {
+        completedGates = [];
+        score = 0;
+        currentGateId = null;
+        document.getElementById("mapView").style.display = "flex";
+        document.getElementById("completionScreen").classList.remove("active");
+        initMap();
+      }
+
+      function enterLesson() {
+        window.location.href = "ml_lesson_complete.html";
+      }
+
+      /* ── AUDIO ── */
+      let audioContext = null;
+
+      function ensureAudio() {
+        if (!audioContext)
+          audioContext = new (
+            window.AudioContext || window.webkitAudioContext
+          )();
+      }
+
+      function playSound() {
+        ensureAudio();
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        osc.frequency.value = 600;
+        osc.type = "sine";
+        gain.gain.setValueAtTime(0.2, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(
+          0.01,
+          audioContext.currentTime + 0.2,
+        );
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        osc.start();
+        osc.stop(audioContext.currentTime + 0.2);
+      }
+
+      function playCorrectSound() {
+        ensureAudio();
+        const now = audioContext.currentTime;
+        [880, 1175].forEach((freq, i) => {
+          const osc = audioContext.createOscillator();
+          const gain = audioContext.createGain();
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0.2, now + i * 0.1);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.3);
+          osc.connect(gain);
+          gain.connect(audioContext.destination);
+          osc.start(now + i * 0.1);
+          osc.stop(now + i * 0.1 + 0.3);
+        });
+      }
+
+      function playWrongSound() {
+        ensureAudio();
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        osc.frequency.value = 300;
+        gain.gain.setValueAtTime(0.2, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(
+          0.01,
+          audioContext.currentTime + 0.4,
+        );
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        osc.start();
+        osc.stop(audioContext.currentTime + 0.4);
+      }
+
+      function playFanfare() {
+        ensureAudio();
+        const notes = [523.25, 659.25, 783.99, 1046.5];
+        notes.forEach((freq, i) => {
+          const delay = i * 0.12;
+          const osc = audioContext.createOscillator();
+          const gain = audioContext.createGain();
+          osc.frequency.value = freq;
+          osc.type = "triangle";
+          gain.gain.setValueAtTime(0.2, audioContext.currentTime + delay);
+          gain.gain.exponentialRampToValueAtTime(
+            0.01,
+            audioContext.currentTime + delay + 0.6,
+          );
+          osc.connect(gain);
+          gain.connect(audioContext.destination);
+          osc.start(audioContext.currentTime + delay);
+          osc.stop(audioContext.currentTime + delay + 0.6);
+        });
+      }
+
+      /* ── INIT ── */
+      initMap();
+      document.addEventListener("click", () => {
+        ensureAudio();
+      });
+    </script>
+  </body>
+</html>
